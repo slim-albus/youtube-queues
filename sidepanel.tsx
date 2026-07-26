@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import "./style.css"
-import { PlaySquare, Trash2, Plus, GripVertical, ChevronDown, ChevronRight, Edit2, Zap, Check, X } from "lucide-react"
+import { PlaySquare, Trash2, Plus, GripVertical, ChevronDown, ChevronRight, Edit2, Zap, Check, X, Settings } from "lucide-react"
 
 type TabGroup = chrome.tabGroups.TabGroup
 type Tab = chrome.tabs.Tab
@@ -13,7 +13,7 @@ interface Queue {
 const colorMap: Record<string, string> = {
   grey: "#71717a",
   blue: "#3b82f6",
-  red: "#ef4444",
+  red: "#ff0000",
   yellow: "#eab308",
   green: "#22c55e",
   pink: "#ec4899",
@@ -172,23 +172,35 @@ function SidePanel() {
     await chrome.tabs.update(tab.id!, { active: true })
   }
 
+  const openOptions = () => {
+    chrome.runtime.openOptionsPage()
+  }
+
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-50 p-2 font-sans selection:bg-red-500/30 pb-24 relative">
+    <div className="min-h-screen bg-[#0f0f0f] text-[#f1f1f1] p-2 font-sans selection:bg-[#ff0000]/30 pb-24 relative">
       
-      {/* Subtle Header Stats */}
-      <div className="flex items-center mb-3 sticky top-0 bg-zinc-950/95 backdrop-blur z-20 py-2 border-b border-zinc-900/50">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3 sticky top-0 bg-[#0f0f0f]/95 backdrop-blur z-20 py-2 border-b border-[#272727]">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-medium">YouTube Tabs:</span>
-          <span className="text-sm font-semibold text-zinc-400">{totalTabs}</span>
-          <span className="text-[10px] text-zinc-600 font-medium tracking-wide">
-            (<span className="text-green-500/60">{loadedTabs}</span> active)
+          <span className="text-[10px] text-[#aaaaaa] uppercase tracking-widest font-medium">YouTube Tabs:</span>
+          <span className="text-sm font-semibold text-[#f1f1f1]">{totalTabs}</span>
+          <span className="text-[10px] text-[#aaaaaa] font-medium tracking-wide">
+            (<span className="text-green-500/80">{loadedTabs}</span> active)
           </span>
         </div>
+        
+        <button 
+          onClick={openOptions}
+          className="text-[#aaaaaa] hover:text-[#f1f1f1] p-1 rounded-full hover:bg-[#272727] transition-colors"
+          title="Settings"
+        >
+          <Settings size={16} />
+        </button>
       </div>
 
       <div className="space-y-3 relative z-10">
         {queues.length === 0 && ungroupedTabs.length === 0 && (
-          <div className="text-center text-zinc-500 mt-10 text-sm">
+          <div className="text-center text-[#aaaaaa] mt-10 text-sm">
             No YouTube queues found.<br/> Open a video to start.
           </div>
         )}
@@ -200,17 +212,17 @@ function SidePanel() {
           return (
             <div 
               key={queue.group.id} 
-              className="bg-zinc-900 border rounded-lg overflow-hidden shadow-sm transition-colors"
+              className="bg-[#0f0f0f] border rounded-lg overflow-hidden shadow-sm transition-colors"
               style={{ borderColor: `${groupColor}40` }}
             >
               {/* Queue Header */}
               <div 
-                className="bg-zinc-800/60 p-2 flex items-center justify-between cursor-pointer hover:bg-zinc-800 transition-colors"
+                className="bg-[#272727] p-2 flex items-center justify-between cursor-pointer hover:bg-[#3f3f3f] transition-colors"
                 style={{ borderBottomWidth: isCollapsed ? '0px' : '1px', borderBottomColor: `${groupColor}40` }}
                 onClick={() => toggleCollapse(queue.group)}
               >
                 <div className="flex items-center gap-2 flex-1 overflow-hidden">
-                  <div className="text-zinc-500">
+                  <div className="text-[#aaaaaa]">
                     {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
                   </div>
                   <div 
@@ -221,7 +233,7 @@ function SidePanel() {
                   {editingGroupId === queue.group.id ? (
                     <input
                       autoFocus
-                      className="bg-zinc-950 text-white px-2 py-0.5 rounded text-sm w-full outline-none"
+                      className="bg-[#0f0f0f] text-white px-2 py-0.5 rounded text-sm w-full outline-none"
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
                       onClick={(e) => e.stopPropagation()}
@@ -231,15 +243,15 @@ function SidePanel() {
                   ) : (
                     <div className="flex items-center gap-2 group flex-1 min-w-0">
                       <h2 
-                        className="font-semibold text-zinc-200 flex items-center gap-2 truncate text-sm"
+                        className="font-semibold text-[#f1f1f1] flex items-center gap-2 truncate text-sm"
                         onClick={(e) => { e.stopPropagation(); focusQueue(queue) }}
                       >
                         {queue.group.title || "Unnamed"}
-                        <span className="text-xs text-zinc-600 font-normal shrink-0">({queue.tabs.length})</span>
+                        <span className="text-xs text-[#aaaaaa] font-normal shrink-0">({queue.tabs.length})</span>
                       </h2>
                       <button 
                         onClick={(e) => startRename(queue.group, e)}
-                        className="opacity-0 group-hover:opacity-100 text-zinc-500 hover:text-zinc-300 p-0.5"
+                        className="opacity-0 group-hover:opacity-100 text-[#aaaaaa] hover:text-[#f1f1f1] p-0.5"
                       >
                         <Edit2 size={12} />
                       </button>
@@ -249,7 +261,7 @@ function SidePanel() {
                 
                 <button 
                   onClick={(e) => { e.stopPropagation(); deleteQueue(queue) }}
-                  className="text-zinc-500 hover:text-red-400 p-1 transition-colors ml-1"
+                  className="text-[#aaaaaa] hover:text-[#ff0000] p-1 transition-colors ml-1"
                   title="Delete Queue"
                 >
                   <Trash2 size={14} />
@@ -258,7 +270,7 @@ function SidePanel() {
               
               {/* Tabs List */}
               {!isCollapsed && (
-                <div className="p-1 space-y-0.5 bg-zinc-950/30">
+                <div className="p-1 space-y-0.5 bg-[#0f0f0f]">
                   {queue.tabs.map(tab => {
                     const isDragTarget = dragOverTabId === tab.id
                     
@@ -275,26 +287,26 @@ function SidePanel() {
                           onDragLeave={() => setDragOverTabId(null)}
                           onDrop={(e) => handleDrop(e, tab)}
                           onClick={() => handleGoToTab(tab)}
-                          className="group flex items-center justify-between p-1.5 hover:bg-zinc-800 rounded-md transition-all cursor-pointer text-sm select-none"
+                          className="group flex items-center justify-between p-1.5 hover:bg-[#272727] rounded-md transition-all cursor-pointer text-sm select-none"
                         >
                           <div className="flex items-center gap-2 overflow-hidden w-full">
-                            <GripVertical size={14} className="text-zinc-600 cursor-grab active:cursor-grabbing flex-shrink-0 hover:text-zinc-400" />
+                            <GripVertical size={14} className="text-[#3f3f3f] cursor-grab active:cursor-grabbing flex-shrink-0 group-hover:text-[#aaaaaa]" />
                             
                             <div 
                               title={tab.discarded ? "Sleeping" : "Loaded (Active)"} 
-                              className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors ${tab.discarded ? 'bg-zinc-700' : 'bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.6)]'}`} 
+                              className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors ${tab.discarded ? 'bg-[#3f3f3f]' : 'bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.6)]'}`} 
                             />
                             
                             <img src={tab.favIconUrl || "https://www.youtube.com/favicon.ico"} className={`w-3.5 h-3.5 flex-shrink-0 ${tab.discarded ? 'opacity-40' : 'opacity-100'}`} alt="" />
                             
-                            <span className={`truncate ${tab.discarded ? 'text-zinc-500 group-hover:text-zinc-300' : 'text-zinc-300 group-hover:text-white'}`} title={tab.title}>
+                            <span className={`truncate ${tab.discarded ? 'text-[#aaaaaa] group-hover:text-[#f1f1f1]' : 'text-[#f1f1f1]'}`} title={tab.title}>
                               {tab.title}
                             </span>
                           </div>
 
                           <button 
                             onClick={(e) => closeTab(tab.id!, e)}
-                            className="text-zinc-600 hover:text-red-400 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity ml-2 shrink-0 bg-zinc-800/50"
+                            className="text-[#aaaaaa] hover:text-[#ff0000] p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity ml-2 shrink-0 bg-[#0f0f0f]"
                             title="Close tab"
                           >
                             <Trash2 size={14} />
@@ -317,19 +329,19 @@ function SidePanel() {
       {/* Floating Action Button for New Queue */}
       <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
         {isCreatingQueue && (
-          <div className="flex items-center gap-1 bg-zinc-900 p-1.5 rounded-xl border border-zinc-700 shadow-2xl mb-2 animate-in slide-in-from-bottom-2">
+          <div className="flex items-center gap-1 bg-[#272727] p-1.5 rounded-xl border border-[#3f3f3f] shadow-2xl mb-2 animate-in slide-in-from-bottom-2">
             <input 
               autoFocus
-              className="bg-zinc-950 text-sm w-48 outline-none px-3 py-1.5 text-white rounded-lg border border-zinc-800 focus:border-red-500/50"
+              className="bg-[#0f0f0f] text-sm w-48 outline-none px-3 py-1.5 text-[#f1f1f1] rounded-lg border border-[#3f3f3f] focus:border-[#ff0000]/50"
               placeholder="Queue name..."
               value={newQueueName}
               onChange={e => setNewQueueName(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && submitNewQueue()}
             />
-            <button onClick={submitNewQueue} className="text-green-400 p-1.5 hover:bg-zinc-800 rounded-lg">
+            <button onClick={submitNewQueue} className="text-green-400 p-1.5 hover:bg-[#3f3f3f] rounded-lg">
               <Check size={16} />
             </button>
-            <button onClick={() => setIsCreatingQueue(false)} className="text-red-400 p-1.5 hover:bg-zinc-800 rounded-lg">
+            <button onClick={() => setIsCreatingQueue(false)} className="text-red-400 p-1.5 hover:bg-[#3f3f3f] rounded-lg">
               <X size={16} />
             </button>
           </div>
@@ -338,7 +350,7 @@ function SidePanel() {
         {!isCreatingQueue && (
           <button 
             onClick={() => setIsCreatingQueue(true)}
-            className="bg-red-600 hover:bg-red-700 text-white p-3 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.4)] transition-transform active:scale-95 flex items-center justify-center"
+            className="bg-[#ff0000] hover:bg-[#cc0000] text-[#f1f1f1] p-3 rounded-full shadow-[0_0_15px_rgba(255,0,0,0.4)] transition-transform active:scale-95 flex items-center justify-center"
             title="Create New Queue"
           >
             <Plus size={20} />

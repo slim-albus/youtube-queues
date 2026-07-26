@@ -1,6 +1,6 @@
+import { defaultSettings, AppSettings } from "./lib/settings"
 export {}
 
-const MAX_ACTIVE_TABS = 5
 let lruTabs: number[] = []
 
 // Set of tab IDs that should be discarded as soon as their title loads
@@ -19,6 +19,9 @@ function markTabAsUsed(tabId: number) {
 
 // Handle RAM manager
 async function manageRam() {
+  const rawSettings = await chrome.storage.sync.get(defaultSettings)
+  const settings = rawSettings as AppSettings
+
   const allTabs = await chrome.tabs.query({ url: "*://*.youtube.com/*" })
   const activeTabs = allTabs.filter((t) => !t.discarded)
 
@@ -31,8 +34,8 @@ async function manageRam() {
     }
   }
 
-  if (lruTabs.length > MAX_ACTIVE_TABS) {
-    const tabsToDiscard = lruTabs.slice(0, lruTabs.length - MAX_ACTIVE_TABS)
+  if (lruTabs.length > settings.maxActiveTabs) {
+    const tabsToDiscard = lruTabs.slice(0, lruTabs.length - settings.maxActiveTabs)
     for (const tabId of tabsToDiscard) {
       const tab = activeTabs.find((t) => t.id === tabId)
       if (tab && !tab.active) {
@@ -54,8 +57,11 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (tab.url?.includes("youtube.com")) {
+    const rawSettings = await chrome.storage.sync.get(defaultSettings)
+    const settings = rawSettings as AppSettings
+
     // If it's a background tab waiting to be discarded, do it as soon as we get a real title
-    if (pendingDiscard.has(tabId) && changeInfo.title && changeInfo.title !== "YouTube" && !changeInfo.title.startsWith("http")) {
+    if (settings.autoUnload && pendingDiscard.has(tabId) && changeInfo.title && changeInfo.title !== "YouTube" && !changeInfo.title.startsWith("http")) {
       chrome.tabs.discard(tabId)
       pendingDiscard.delete(tabId)
       return
