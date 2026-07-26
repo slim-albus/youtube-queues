@@ -17,12 +17,13 @@ document.addEventListener("click", (e) => {
   // Only intercept youtube links
   if (!url.hostname.includes("youtube.com")) return
 
-  // Exception for channel links and timestamp links
+  // Exception for channel links, timestamp links, and playlists
   const isVideo = url.pathname === "/watch"
   const isTimestamp = url.searchParams.has("t") || url.hash.includes("t=")
+  const isPlaylist = url.searchParams.has("list")
   const isChannel = url.pathname.startsWith("/@") || url.pathname.startsWith("/c/") || url.pathname.startsWith("/channel/") || url.pathname.startsWith("/user/")
 
-  if (isTimestamp || isChannel) {
+  if (isTimestamp || isChannel || isPlaylist) {
     // Let default behavior happen (usually same tab)
     return
   }
@@ -37,7 +38,7 @@ document.addEventListener("click", (e) => {
       // Normal click: Open in NEW tab (which background.ts will group)
       e.preventDefault()
       e.stopPropagation()
-      window.open(anchor.href, "_blank")
+      chrome.runtime.sendMessage({ action: "openBackground", url: anchor.href })
     }
   }
 }, true) // Use capture phase to intercept before YouTube's SPA router
