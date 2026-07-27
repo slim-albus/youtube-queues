@@ -74,3 +74,22 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom Scrollbar for YouTube Dark Theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f0f0f; 
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3f3f3f; 
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #71717a; 
+}

@@ -61,7 +61,7 @@ export function QueueItem({
       style={{ borderColor: `${groupColor}40` }}
     >
       <div 
-        className="bg-[#272727] px-2 py-1 flex items-center justify-between cursor-pointer hover:bg-[#3f3f3f] transition-colors"
+        className="bg-[#272727] px-2 py-1 flex items-center justify-between cursor-pointer hover:bg-[#3f3f3f] transition-colors group/header"
         style={{ borderBottomWidth: isCollapsed ? '0px' : '1px', borderBottomColor: `${groupColor}40` }}
         onClick={() => toggleCollapse(queue.group)}
       >
@@ -105,7 +105,7 @@ export function QueueItem({
         
         <button 
           onClick={(e) => { e.stopPropagation(); deleteQueue(queue) }}
-          className="text-[#aaaaaa] hover:text-[#ff0000] p-1.5 transition-colors ml-1"
+          className="text-[#aaaaaa] hover:text-[#ff0000] p-1.5 transition-all ml-1 opacity-0 group-hover/header:opacity-100"
           title="Delete Queue"
         >
           <Trash2 size={16} />
