@@ -43,19 +43,19 @@ export function TabItem({
         onDragLeave={handleDragLeave}
         onDrop={(e) => handleDrop(e, tab)}
         onClick={() => handleGoToTab(tab)}
-        className={`group flex items-center justify-between p-2 rounded-md transition-all cursor-pointer select-none ${isActive ? 'bg-[#272727] border border-[#3f3f3f]' : 'hover:bg-[#272727] border border-transparent'}`}
+        className={`group flex items-center justify-between p-1 rounded-md transition-all cursor-pointer select-none ${isActive ? 'bg-[#272727] border border-[#3f3f3f]' : 'hover:bg-[#272727] border border-transparent'}`}
       >
-        <div className="flex items-center gap-3 overflow-hidden w-full">
-          <GripVertical size={16} className="text-[#3f3f3f] cursor-grab active:cursor-grabbing flex-shrink-0 opacity-0 group-hover:opacity-100 group-hover:text-[#aaaaaa] transition-opacity" />
+        <div className="flex items-center gap-2 overflow-hidden w-full">
+          <GripVertical size={14} className="text-[#3f3f3f] cursor-grab active:cursor-grabbing flex-shrink-0 opacity-0 group-hover:opacity-100 group-hover:text-[#aaaaaa] transition-opacity" />
           
-          <img src={tab.favIconUrl || "https://www.youtube.com/favicon.ico"} className={`w-4 h-4 flex-shrink-0 ${tab.discarded ? 'opacity-40' : 'opacity-100'}`} alt="" />
+          <img src={tab.favIconUrl || "https://www.youtube.com/favicon.ico"} className={`w-3.5 h-3.5 flex-shrink-0 ${tab.discarded ? 'opacity-40' : 'opacity-100'}`} alt="" />
           
           <span className={`truncate text-sm ${tab.discarded ? 'text-[#aaaaaa] group-hover:text-[#f1f1f1]' : (isActive ? 'text-white font-medium' : 'text-[#f1f1f1]')}`} title={tab.title}>
             {tab.title}
           </span>
         </div>
 
-        <div className="flex items-center gap-3 ml-2 shrink-0">
+        <div className="flex items-center gap-2 ml-1 shrink-0">
           <div 
             title={tab.discarded ? "Sleeping" : "Loaded (Active)"} 
             className={`w-2 h-2 rounded-full flex-shrink-0 transition-colors ${tab.discarded ? 'bg-[#3f3f3f]' : 'bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.6)]'}`} 

@@ -57,20 +57,20 @@ export function QueueItem({
 
   return (
     <div 
-      className="bg-[#0f0f0f] border rounded-lg overflow-hidden shadow-sm transition-colors mb-3"
+      className="bg-[#0f0f0f] border rounded-lg overflow-hidden shadow-sm transition-colors mb-1.5"
       style={{ borderColor: `${groupColor}40` }}
     >
       <div 
-        className="bg-[#272727] p-2 flex items-center justify-between cursor-pointer hover:bg-[#3f3f3f] transition-colors"
+        className="bg-[#272727] px-2 py-1 flex items-center justify-between cursor-pointer hover:bg-[#3f3f3f] transition-colors"
         style={{ borderBottomWidth: isCollapsed ? '0px' : '1px', borderBottomColor: `${groupColor}40` }}
         onClick={() => toggleCollapse(queue.group)}
       >
-        <div className="flex items-center gap-2 flex-1 overflow-hidden">
+        <div className="flex items-center gap-1.5 flex-1 overflow-hidden">
           <div className="text-[#aaaaaa]">
-            {isCollapsed ? <ChevronRight size={18} /> : <ChevronDown size={18} />}
+            {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
           </div>
           <div 
-            className="w-3 h-3 rounded-full flex-shrink-0" 
+            className="w-2.5 h-2.5 rounded-full flex-shrink-0" 
             style={{ backgroundColor: groupColor, boxShadow: `0 0 6px ${groupColor}` }} 
           />
           
