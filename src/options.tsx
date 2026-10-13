@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react"
 import "./style.css"
-import { getSettings, updateSettings, AppSettings, ClickBehavior, defaultSettings } from "./lib/settings"
+import {
+  getSettings,
+  updateSettings,
+  AppSettings,
+  ClickBehavior,
+  CloseButtonBehavior,
+  StatsDisplayLocation,
+  DuplicateCheckBehavior,
+  defaultSettings
+} from "./lib/settings"
 import { Settings, Save, Check } from "lucide-react"
 
 function Options() {
@@ -23,67 +32,130 @@ function Options() {
     { value: "same_tab", label: "Open in Current Tab (Default YouTube)" }
   ]
 
+  const CloseOptions = [
+    {
+      value: "unload_then_close",
+      label: "First click unloads (if loaded), second click closes"
+    },
+    { value: "close", label: "Always close immediately on click" }
+  ]
+
+  const StatsOptions = [
+    { value: "fab", label: "In Bottom HUD Pill (Clean Header)" },
+    { value: "header", label: "In Top Header" },
+    { value: "both", label: "In Both HUD & Header" }
+  ]
+
+  const DuplicateOptions = [
+    {
+      value: "focus_existing",
+      label: "Switch to existing tab (Prevent duplicates & save RAM)"
+    },
+    { value: "allow", label: "Open anyway (Allow duplicates)" }
+  ]
+
   return (
     <div className="min-h-screen bg-[#0f0f0f] text-[#f1f1f1] p-8 font-sans">
-      <div className="max-w-2xl mx-auto">
-        
+      <div className="max-w-2xl mx-auto pb-16">
         <div className="flex items-center gap-3 mb-8 pb-4 border-b border-[#3f3f3f]">
           <Settings className="text-red-500" size={28} />
           <h1 className="text-2xl font-bold">YouTube Queues Settings</h1>
         </div>
 
         <div className="space-y-8">
-          
-          {/* Link Behavior */}
+          {/* Section 1: Video Link Behavior */}
           <section className="space-y-4">
             <h2 className="text-lg font-semibold text-white">Video Link Behavior</h2>
-            <p className="text-sm text-[#aaaaaa]">Choose what happens when you click a video thumbnail on YouTube.</p>
-            
-            <div className="bg-[#272727] p-5 rounded-xl border border-[#3f3f3f] space-y-5">
-              
+            <p className="text-sm text-[#aaaaaa]">
+              Control how clicks on YouTube video thumbnails are routed.
+            </p>
+
+            <div className="bg-[#272727] p-5 rounded-xl border border-[#3f3f3f] space-y-4">
               <div className="flex flex-col gap-2">
-                <label className="font-medium">Normal Click (Left Click)</label>
-                <select 
-                  className="bg-[#0f0f0f] border border-[#3f3f3f] rounded-lg p-2.5 text-[#f1f1f1] outline-none focus:border-red-500"
+                <label className="font-medium text-sm">Normal Click (Left Click)</label>
+                <select
+                  className="bg-[#0f0f0f] border border-[#3f3f3f] rounded-lg p-2.5 text-[#f1f1f1] outline-none focus:border-red-500 text-sm"
                   value={settings.leftClickBehavior}
-                  onChange={(e) => setSettings({ ...settings, leftClickBehavior: e.target.value as ClickBehavior })}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      leftClickBehavior: e.target.value as ClickBehavior
+                    })
+                  }
                 >
-                  {ClickOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                  {ClickOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="font-medium">Ctrl + Click / Cmd + Click</label>
-                <select 
-                  className="bg-[#0f0f0f] border border-[#3f3f3f] rounded-lg p-2.5 text-[#f1f1f1] outline-none focus:border-red-500"
+                <label className="font-medium text-sm">Ctrl + Click / Cmd + Click</label>
+                <select
+                  className="bg-[#0f0f0f] border border-[#3f3f3f] rounded-lg p-2.5 text-[#f1f1f1] outline-none focus:border-red-500 text-sm"
                   value={settings.ctrlClickBehavior}
-                  onChange={(e) => setSettings({ ...settings, ctrlClickBehavior: e.target.value as ClickBehavior })}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      ctrlClickBehavior: e.target.value as ClickBehavior
+                    })
+                  }
                 >
-                  {ClickOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                  {ClickOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
+              <div className="flex flex-col gap-2">
+                <label className="font-medium text-sm">Duplicate Video Check</label>
+                <select
+                  className="bg-[#0f0f0f] border border-[#3f3f3f] rounded-lg p-2.5 text-[#f1f1f1] outline-none focus:border-red-500 text-sm"
+                  value={settings.duplicateCheckBehavior}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      duplicateCheckBehavior: e.target.value as DuplicateCheckBehavior
+                    })
+                  }
+                >
+                  {DuplicateOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </section>
 
-          {/* Memory Management */}
+          {/* Section 2: Memory Management */}
           <section className="space-y-4">
             <h2 className="text-lg font-semibold text-white">Memory Management</h2>
-            <p className="text-sm text-[#aaaaaa]">Control how aggressively the extension frees up RAM from background YouTube tabs.</p>
-            
-            <div className="bg-[#272727] p-5 rounded-xl border border-[#3f3f3f] space-y-6">
-              
+            <p className="text-sm text-[#aaaaaa]">
+              Tune background tab sleeping and single-click tab unload behavior.
+            </p>
+
+            <div className="bg-[#272727] p-5 rounded-xl border border-[#3f3f3f] space-y-5">
               <div className="flex items-center justify-between">
                 <div className="flex flex-col">
-                  <label className="font-medium">Instant Background Unload</label>
-                  <span className="text-xs text-[#aaaaaa]">Immediately put tabs to sleep after getting their title (saves max RAM).</span>
+                  <label className="font-medium text-sm">Instant Background Unload</label>
+                  <span className="text-xs text-[#aaaaaa]">
+                    Put background tabs to sleep as soon as their title is captured.
+                  </span>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    className="sr-only peer" 
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
                     checked={settings.autoUnload}
-                    onChange={(e) => setSettings({ ...settings, autoUnload: e.target.checked })}
+                    onChange={(e) =>
+                      setSettings({ ...settings, autoUnload: e.target.checked })
+                    }
                   />
                   <div className="w-11 h-6 bg-[#0f0f0f] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-zinc-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
                 </label>
@@ -91,34 +163,213 @@ function Options() {
 
               <div className="flex items-center justify-between">
                 <div className="flex flex-col">
-                  <label className="font-medium">Max Active Tabs Limit</label>
-                  <span className="text-xs text-[#aaaaaa]">If exceeded, the oldest unused YouTube tab will be put to sleep.</span>
+                  <label className="font-medium text-sm">Max Active Tabs Limit</label>
+                  <span className="text-xs text-[#aaaaaa]">
+                    Oldest loaded YouTube tabs are automatically put to sleep beyond this limit.
+                  </span>
                 </div>
-                <input 
+                <input
                   type="number"
                   min="1"
                   max="50"
-                  className="bg-[#0f0f0f] border border-[#3f3f3f] rounded-lg p-2 w-20 text-center text-[#f1f1f1] outline-none focus:border-red-500"
+                  className="bg-[#0f0f0f] border border-[#3f3f3f] rounded-lg p-2 w-20 text-center text-[#f1f1f1] outline-none focus:border-red-500 text-sm"
                   value={settings.maxActiveTabs}
-                  onChange={(e) => setSettings({ ...settings, maxActiveTabs: parseInt(e.target.value) || 5 })}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      maxActiveTabs: parseInt(e.target.value) || 5
+                    })
+                  }
                 />
               </div>
 
+              <div className="flex flex-col gap-2 pt-2 border-t border-[#383838]">
+                <label className="font-medium text-sm">Tab Close / Unload Button Behavior</label>
+                <select
+                  className="bg-[#0f0f0f] border border-[#3f3f3f] rounded-lg p-2.5 text-[#f1f1f1] outline-none focus:border-red-500 text-sm"
+                  value={settings.closeButtonBehavior}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      closeButtonBehavior: e.target.value as CloseButtonBehavior
+                    })
+                  }
+                >
+                  {CloseOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </section>
 
+          {/* Section 3: Interface & Appearance */}
+          <section className="space-y-4">
+            <h2 className="text-lg font-semibold text-white">Interface & Appearance</h2>
+            <p className="text-sm text-[#aaaaaa]">
+              Customize sidepanel statistics, queue header stickiness, and colors.
+            </p>
+
+            <div className="bg-[#272727] p-5 rounded-xl border border-[#3f3f3f] space-y-5">
+              <div className="flex flex-col gap-2">
+                <label className="font-medium text-sm">Stats & RAM Display Location</label>
+                <select
+                  className="bg-[#0f0f0f] border border-[#3f3f3f] rounded-lg p-2.5 text-[#f1f1f1] outline-none focus:border-red-500 text-sm"
+                  value={settings.statsDisplayLocation}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      statsDisplayLocation: e.target.value as StatsDisplayLocation
+                    })
+                  }
+                >
+                  {StatsOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col">
+                  <label className="font-medium text-sm">Queue-Colored Active Dot</label>
+                  <span className="text-xs text-[#aaaaaa]">
+                    Show queue's specific color for loaded tabs instead of standard green.
+                  </span>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={settings.useQueueColorForIndicator}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        useQueueColorForIndicator: e.target.checked
+                      })
+                    }
+                  />
+                  <div className="w-11 h-6 bg-[#0f0f0f] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-zinc-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                </label>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col">
+                  <label className="font-medium text-sm">Sticky Queue Headers</label>
+                  <span className="text-xs text-[#aaaaaa]">
+                    Pin queue title to the top while scrolling through long queues.
+                  </span>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={settings.stickyQueueHeaders}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        stickyQueueHeaders: e.target.checked
+                      })
+                    }
+                  />
+                  <div className="w-11 h-6 bg-[#0f0f0f] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-zinc-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                </label>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col">
+                  <label className="font-medium text-sm">Contextual Scroll Button</label>
+                  <span className="text-xs text-[#aaaaaa]">
+                    Show mini floating button that interchanges between Scroll to Top / Bottom.
+                  </span>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={settings.showScrollHelperButtons}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        showScrollHelperButtons: e.target.checked
+                      })
+                    }
+                  />
+                  <div className="w-11 h-6 bg-[#0f0f0f] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-zinc-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                </label>
+              </div>
+            </div>
+          </section>
+
+          {/* Section 4: Navigation & Tab Groups */}
+          <section className="space-y-4">
+            <h2 className="text-lg font-semibold text-white">Navigation & Tab Groups</h2>
+            <p className="text-sm text-[#aaaaaa]">
+              Manage auto-scrolling behaviors and browser tab group synchronization.
+            </p>
+
+            <div className="bg-[#272727] p-5 rounded-xl border border-[#3f3f3f] space-y-5">
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col">
+                  <label className="font-medium text-sm">Auto-Scroll on Drag</label>
+                  <span className="text-xs text-[#aaaaaa]">
+                    Smoothly scroll the list when dragging tabs near the top or bottom edge.
+                  </span>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={settings.autoScrollOnDrag}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        autoScrollOnDrag: e.target.checked
+                      })
+                    }
+                  />
+                  <div className="w-11 h-6 bg-[#0f0f0f] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-zinc-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                </label>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col">
+                  <label className="font-medium text-sm">Keep Browser Tab Groups Collapsed</label>
+                  <span className="text-xs text-[#aaaaaa]">
+                    Keeps Chrome's top tab strip groups collapsed while leaving queues open and navigable in the sidepanel.
+                  </span>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={settings.keepBrowserGroupsCollapsed}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        keepBrowserGroupsCollapsed: e.target.checked
+                      })
+                    }
+                  />
+                  <div className="w-11 h-6 bg-[#0f0f0f] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-zinc-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                </label>
+              </div>
+            </div>
+          </section>
         </div>
 
         <div className="mt-10 flex justify-end">
-          <button 
+          <button
             onClick={handleSave}
-            className="flex items-center gap-2 bg-[#f1f1f1] hover:bg-white text-[#0f0f0f] font-semibold py-2.5 px-6 rounded-full transition-colors active:scale-95"
+            className="flex items-center gap-2 bg-[#f1f1f1] hover:bg-white text-[#0f0f0f] font-semibold py-2.5 px-6 rounded-full transition-colors active:scale-95 shadow-md"
           >
             {saved ? <Check size={20} className="text-green-600" /> : <Save size={20} />}
             {saved ? "Saved!" : "Save Settings"}
           </button>
         </div>
-
       </div>
     </div>
   )

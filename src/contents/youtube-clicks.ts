@@ -3,8 +3,24 @@ import { defaultSettings, AppSettings } from "../lib/settings"
 
 export const config: PlasmoCSConfig = {
   matches: ["*://*.youtube.com/*"],
-  all_frames: true
+  all_frames: false
 }
+
+// Respond to memory inspection requests from the side panel
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "getMemory") {
+    const perf = window.performance as any
+    if (perf && perf.memory) {
+      sendResponse({
+        usedJSHeapSize: perf.memory.usedJSHeapSize,
+        totalJSHeapSize: perf.memory.totalJSHeapSize
+      })
+    } else {
+      sendResponse(null)
+    }
+    return true
+  }
+})
 
 document.addEventListener("click", async (e) => {
   const target = e.target as HTMLElement

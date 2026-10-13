@@ -1,5 +1,7 @@
+import React from "react"
 import { ChevronDown, ChevronRight, Edit2, Trash2 } from "lucide-react"
 import { TabItem } from "./TabItem"
+import { CloseButtonBehavior } from "../lib/settings"
 
 type TabGroup = chrome.tabGroups.TabGroup
 type Tab = chrome.tabs.Tab
@@ -16,11 +18,15 @@ interface QueueItemProps {
   editTitle: string
   activeTabId: number | null
   dragOverTabId: number | null
-  dragPosition: 'before' | 'after'
+  dragPosition: "before" | "after"
+  isCollapsed: boolean
+  stickyHeaders: boolean
+  useQueueColorForIndicator: boolean
+  closeButtonBehavior: CloseButtonBehavior
   setEditTitle: (val: string) => void
   startRename: (group: TabGroup, e: React.MouseEvent) => void
   saveRename: (groupId: number) => void
-  toggleCollapse: (group: TabGroup) => void
+  toggleCollapse: (queue: Queue) => void
   focusQueue: (queue: Queue) => void
   deleteQueue: (queue: Queue) => void
   handleDragStart: (e: React.DragEvent, tab: Tab) => void
@@ -29,6 +35,8 @@ interface QueueItemProps {
   handleDrop: (e: React.DragEvent, tab: Tab) => void
   handleGoToTab: (tab: Tab) => void
   closeTab: (tabId: number, e: React.MouseEvent) => void
+  unloadTab: (tabId: number, e: React.MouseEvent) => void
+  onContextMenu: (e: React.MouseEvent, tab: Tab) => void
 }
 
 export function QueueItem({
@@ -39,6 +47,10 @@ export function QueueItem({
   activeTabId,
   dragOverTabId,
   dragPosition,
+  isCollapsed,
+  stickyHeaders,
+  useQueueColorForIndicator,
+  closeButtonBehavior,
   setEditTitle,
   startRename,
   saveRename,
@@ -50,30 +62,40 @@ export function QueueItem({
   handleDragLeave,
   handleDrop,
   handleGoToTab,
-  closeTab
+  closeTab,
+  unloadTab,
+  onContextMenu
 }: QueueItemProps) {
   const groupColor = colorMap[queue.group.color] || colorMap.grey
-  const isCollapsed = queue.group.collapsed
 
   return (
-    <div 
+    <div
       className="bg-[#0f0f0f] border rounded-lg overflow-hidden shadow-sm transition-colors mb-1.5"
       style={{ borderColor: `${groupColor}40` }}
     >
-      <div 
-        className="bg-[#272727] px-2 py-1 flex items-center justify-between cursor-pointer hover:bg-[#3f3f3f] transition-colors group/header"
-        style={{ borderBottomWidth: isCollapsed ? '0px' : '1px', borderBottomColor: `${groupColor}40` }}
-        onClick={() => toggleCollapse(queue.group)}
+      {/* Queue Header: Sticky support */}
+      <div
+        className={`bg-[#272727] px-2 py-1 flex items-center justify-between cursor-pointer hover:bg-[#3f3f3f] transition-colors group/header ${
+          stickyHeaders ? "sticky top-[35px] z-10" : ""
+        }`}
+        style={{
+          borderBottomWidth: isCollapsed ? "0px" : "1px",
+          borderBottomColor: `${groupColor}40`
+        }}
+        onClick={() => toggleCollapse(queue)}
       >
         <div className="flex items-center gap-1.5 flex-1 overflow-hidden">
           <div className="text-[#aaaaaa]">
             {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
           </div>
-          <div 
-            className="w-2.5 h-2.5 rounded-full flex-shrink-0" 
-            style={{ backgroundColor: groupColor, boxShadow: `0 0 6px ${groupColor}` }} 
+          <div
+            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+            style={{
+              backgroundColor: groupColor,
+              boxShadow: `0 0 6px ${groupColor}`
+            }}
           />
-          
+
           {editingGroupId === queue.group.id ? (
             <input
               autoFocus
@@ -82,42 +104,54 @@ export function QueueItem({
               onChange={(e) => setEditTitle(e.target.value)}
               onClick={(e) => e.stopPropagation()}
               onBlur={() => saveRename(queue.group.id)}
-              onKeyDown={(e) => e.key === 'Enter' && saveRename(queue.group.id)}
+              onKeyDown={(e) => e.key === "Enter" && saveRename(queue.group.id)}
             />
           ) : (
             <div className="flex items-center gap-2 group flex-1 min-w-0">
-              <h2 
+              <h2
                 className="font-semibold text-[#f1f1f1] flex items-center gap-2 truncate text-base"
-                onClick={(e) => { e.stopPropagation(); focusQueue(queue) }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  focusQueue(queue)
+                }}
               >
                 {queue.group.title || "Unnamed"}
-                <span className="text-sm text-[#aaaaaa] font-normal shrink-0">({queue.tabs.length})</span>
+                <span className="text-sm text-[#aaaaaa] font-normal shrink-0">
+                  ({queue.tabs.length})
+                </span>
               </h2>
-              <button 
+              <button
                 onClick={(e) => startRename(queue.group, e)}
                 className="opacity-0 group-hover:opacity-100 text-[#aaaaaa] hover:text-[#f1f1f1] p-1"
+                title="Rename Queue"
               >
                 <Edit2 size={14} />
               </button>
             </div>
           )}
         </div>
-        
-        <button 
-          onClick={(e) => { e.stopPropagation(); deleteQueue(queue) }}
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            deleteQueue(queue)
+          }}
           className="text-[#aaaaaa] hover:text-[#ff0000] p-1.5 transition-all ml-1 opacity-0 group-hover/header:opacity-100"
           title="Delete Queue"
         >
           <Trash2 size={16} />
         </button>
       </div>
-      
+
       {!isCollapsed && (
         <div className="p-1 space-y-0.5 bg-[#0f0f0f]">
-          {queue.tabs.map(tab => (
-            <TabItem 
+          {queue.tabs.map((tab) => (
+            <TabItem
               key={tab.id}
               tab={tab}
+              groupColor={groupColor}
+              useQueueColorForIndicator={useQueueColorForIndicator}
+              closeButtonBehavior={closeButtonBehavior}
               activeTabId={activeTabId}
               dragOverTabId={dragOverTabId}
               dragPosition={dragPosition}
@@ -127,6 +161,8 @@ export function QueueItem({
               handleDrop={handleDrop}
               handleGoToTab={handleGoToTab}
               closeTab={closeTab}
+              unloadTab={unloadTab}
+              onContextMenu={onContextMenu}
             />
           ))}
         </div>
