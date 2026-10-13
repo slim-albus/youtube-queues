@@ -1,7 +1,7 @@
 {
   "name": "youtube-queues",
   "displayName": "YouTube Queues - Smart Watch Queue & Tab Manager",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Organize YouTube videos into categorized, color-coded watch queues with tab groups, auto-discarding memory savings, and 1-click controls.",
   "author": "Brooks <brookayneabeba@gmail.com>",
   "license": "MIT",
