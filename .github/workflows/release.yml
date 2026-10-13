@@ -1,0 +1,75 @@
+name: "Build & Release Extension"
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: "Build & Package Extension"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+
+      - name: "Setup Bun environment"
+        uses: oven-sh/setup-bun@v2
+
+      - name: "Install dependencies"
+        run: bun install --frozen-lockfile
+
+      - name: "Package Chrome Extension (MV3)"
+        run: bun run package:chrome
+
+      - name: "Package Firefox Extension (MV3)"
+        run: bun run package:firefox
+
+      - name: "Prepare Release Assets"
+        id: prepare_assets
+        run: |
+          mkdir -p dist
+          TAG_NAME="${GITHUB_REF_NAME:-v0.1.0}"
+          cp build/chrome-mv3-prod.zip "dist/youtube-queues-${TAG_NAME}-chrome.zip"
+          cp build/firefox-mv3-prod.zip "dist/youtube-queues-${TAG_NAME}-firefox.zip"
+          echo "tag_name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
+          ls -lh dist/
+
+      - name: "Upload Artifacts to Workflow Run"
+        uses: actions/upload-artifact@v4
+        with:
+          name: youtube-queues-packages
+          path: dist/*.zip
+          if-no-files-found: error
+
+      - name: "Publish GitHub Release"
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Release ${{ steps.prepare_assets.outputs.tag_name }}"
+          files: dist/*.zip
+          generate_release_notes: true
+          body: |
+            ### Installation Instructions
+
+            #### Chrome / Brave / Edge / Opera / Vivaldi (Unpacked Mode)
+            1. Download `youtube-queues-${{ steps.prepare_assets.outputs.tag_name }}-chrome.zip`.
+            2. Extract (unzip) the zip file into a folder on your computer.
+            3. Open your browser and navigate to `chrome://extensions/` (or `edge://extensions/`, `brave://extensions/`).
+            4. Enable **Developer mode** toggle in the top-right corner.
+            5. Click **Load unpacked** (top-left) and select the extracted folder.
+            6. Open YouTube and click the extension icon to launch your Queues sidepanel.
+
+            #### Mozilla Firefox (Temporary Add-on Mode)
+            > Requires Firefox 138+ for native tab group support.
+            1. Download `youtube-queues-${{ steps.prepare_assets.outputs.tag_name }}-firefox.zip`.
+            2. Extract (unzip) the zip file into a folder.
+            3. Navigate to `about:debugging#/runtime/this-firefox` in Firefox.
+            4. Click **Load Temporary Add-on...**.
+            5. Select the `manifest.json` file inside the extracted folder.
+
