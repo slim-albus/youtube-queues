@@ -48,8 +48,9 @@ function SidePanel() {
   const [dragOverTabId, setDragOverTabId] = useState<number | null>(null)
   const [dragPosition, setDragPosition] = useState<"before" | "after">("after")
 
-  // Independent sidebar collapse state
+  // Sidebar collapse state managed directly in React
   const [collapsedGroupIds, setCollapsedGroupIds] = useState<Set<number>>(new Set())
+  const [hasInitializedCollapse, setHasInitializedCollapse] = useState(false)
 
   // Context Menu state
   const [contextMenu, setContextMenu] = useState<{
@@ -83,6 +84,18 @@ function SidePanel() {
       setActiveTabId(activeTabs[0].id || null)
     }
 
+    // Initialize collapse state once from Chrome
+    if (!hasInitializedCollapse) {
+      const initialCollapsed = new Set<number>()
+      for (const group of allGroups) {
+        if (group.collapsed) {
+          initialCollapsed.add(group.id)
+        }
+      }
+      setCollapsedGroupIds(initialCollapsed)
+      setHasInitializedCollapse(true)
+    }
+
     const queueMap = new Map<number, Queue>()
 
     for (const tab of allYoutubeTabs) {
@@ -98,7 +111,7 @@ function SidePanel() {
     }
 
     setQueues(Array.from(queueMap.values()))
-  }, [])
+  }, [hasInitializedCollapse])
 
   useEffect(() => {
     loadData()
@@ -198,23 +211,33 @@ function SidePanel() {
     loadData()
   }
 
+  // Instant and reliable collapse toggle
   const toggleCollapse = async (queue: Queue) => {
-    if (settings.keepBrowserGroupsCollapsed) {
-      // Independent sidebar collapse state
-      setCollapsedGroupIds((prev) => {
-        const next = new Set(prev)
-        if (next.has(queue.group.id)) {
-          next.delete(queue.group.id)
-        } else {
-          next.add(queue.group.id)
-        }
-        return next
-      })
-      // Ensure browser tab group stays collapsed
-      await chrome.tabGroups.update(queue.group.id, { collapsed: true }).catch(() => {})
-    } else {
-      await chrome.tabGroups.update(queue.group.id, { collapsed: !queue.group.collapsed })
+    const isNowCollapsed = !collapsedGroupIds.has(queue.group.id)
+
+    // 1. Immediately update React state for instant responsiveness
+    setCollapsedGroupIds((prev) => {
+      const next = new Set(prev)
+      if (isNowCollapsed) {
+        next.add(queue.group.id)
+      } else {
+        next.delete(queue.group.id)
+      }
+      return next
+    })
+
+    // 2. Sync to Chrome tab group
+    try {
+      if (settings.keepBrowserGroupsCollapsed) {
+        await chrome.tabGroups.update(queue.group.id, { collapsed: true })
+      } else {
+        await chrome.tabGroups.update(queue.group.id, { collapsed: isNowCollapsed })
+      }
+    } catch {
+      // Ignore if group was removed
     }
+
+    loadData()
   }
 
   const startRename = (group: TabGroup, e: React.MouseEvent) => {
@@ -334,9 +357,7 @@ function SidePanel() {
         )}
 
         {queues.map((queue) => {
-          const isCollapsed = settings.keepBrowserGroupsCollapsed
-            ? collapsedGroupIds.has(queue.group.id)
-            : queue.group.collapsed
+          const isCollapsed = collapsedGroupIds.has(queue.group.id)
 
           return (
             <QueueItem

@@ -70,14 +70,14 @@ export function QueueItem({
 
   return (
     <div
-      className="bg-[#0f0f0f] border rounded-lg overflow-hidden shadow-sm transition-colors mb-1.5"
+      className="bg-[#0f0f0f] border rounded-lg shadow-sm transition-colors mb-1.5"
       style={{ borderColor: `${groupColor}40` }}
     >
-      {/* Queue Header: Sticky support */}
+      {/* Queue Header */}
       <div
-        className={`bg-[#272727] px-2 py-1 flex items-center justify-between cursor-pointer hover:bg-[#3f3f3f] transition-colors group/header ${
-          stickyHeaders ? "sticky top-[35px] z-10" : ""
-        }`}
+        className={`bg-[#272727] px-2 py-1 flex items-center justify-between cursor-pointer hover:bg-[#3f3f3f] transition-colors group/header rounded-t-lg ${
+          isCollapsed ? "rounded-b-lg" : ""
+        } ${stickyHeaders ? "sticky top-9 z-10" : ""}`}
         style={{
           borderBottomWidth: isCollapsed ? "0px" : "1px",
           borderBottomColor: `${groupColor}40`
@@ -144,7 +144,7 @@ export function QueueItem({
       </div>
 
       {!isCollapsed && (
-        <div className="p-1 space-y-0.5 bg-[#0f0f0f]">
+        <div className="p-1 space-y-0.5 bg-[#0f0f0f] rounded-b-lg">
           {queue.tabs.map((tab) => (
             <TabItem
               key={tab.id}
