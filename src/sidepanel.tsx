@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import "./style.css"
 import { Header } from "./components/Header"
 import { Fab } from "./components/Fab"
@@ -278,24 +278,93 @@ function SidePanel() {
     setEditingGroupId(null)
   }
 
+  // --- Smooth Continuous Auto-Scroll During Drag ---
+  const autoScrollSpeedRef = useRef<number>(0)
+  const animFrameIdRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    const scrollStep = () => {
+      if (autoScrollSpeedRef.current !== 0) {
+        window.scrollBy({ top: autoScrollSpeedRef.current, behavior: "auto" })
+        if (document.documentElement) {
+          document.documentElement.scrollTop += autoScrollSpeedRef.current
+        }
+      }
+      animFrameIdRef.current = requestAnimationFrame(scrollStep)
+    }
+
+    animFrameIdRef.current = requestAnimationFrame(scrollStep)
+
+    return () => {
+      if (animFrameIdRef.current) {
+        cancelAnimationFrame(animFrameIdRef.current)
+      }
+    }
+  }, [])
+
+  // Listen globally during drag for edge proximity auto-scrolling
+  useEffect(() => {
+    if (!draggedTab) {
+      autoScrollSpeedRef.current = 0
+      return
+    }
+
+    const onWindowDragOver = (e: DragEvent) => {
+      if (!settings.autoScrollOnDrag) {
+        autoScrollSpeedRef.current = 0
+        return
+      }
+      e.preventDefault()
+
+      const edgeThreshold = 90
+      const clientY = e.clientY
+      const windowHeight = window.innerHeight
+
+      if (clientY < edgeThreshold) {
+        // Closer to top = faster scroll up
+        const factor = (edgeThreshold - Math.max(0, clientY)) / edgeThreshold
+        autoScrollSpeedRef.current = -Math.max(4, Math.round(factor * 18))
+      } else if (clientY > windowHeight - edgeThreshold) {
+        // Closer to bottom = faster scroll down
+        const factor = (Math.min(windowHeight, clientY) - (windowHeight - edgeThreshold)) / edgeThreshold
+        autoScrollSpeedRef.current = Math.max(4, Math.round(factor * 18))
+      } else {
+        autoScrollSpeedRef.current = 0
+      }
+    }
+
+    const onWindowDragEnd = () => {
+      autoScrollSpeedRef.current = 0
+      setDraggedTab(null)
+      setDragOverTabId(null)
+    }
+
+    window.addEventListener("dragover", onWindowDragOver)
+    window.addEventListener("dragend", onWindowDragEnd)
+    window.addEventListener("drop", onWindowDragEnd)
+
+    return () => {
+      window.removeEventListener("dragover", onWindowDragOver)
+      window.removeEventListener("dragend", onWindowDragEnd)
+      window.removeEventListener("drop", onWindowDragEnd)
+    }
+  }, [draggedTab, settings.autoScrollOnDrag])
+
   // --- Drag and Drop Logic ---
   const handleDragStart = (e: React.DragEvent, tab: Tab) => {
     setDraggedTab(tab)
     e.dataTransfer.effectAllowed = "move"
   }
 
+  const handleDragEnd = () => {
+    setDraggedTab(null)
+    setDragOverTabId(null)
+    autoScrollSpeedRef.current = 0
+  }
+
   const handleDragOver = (e: React.DragEvent, tab: Tab) => {
     e.preventDefault()
     if (!draggedTab || draggedTab.id === tab.id) return
-
-    // Auto-scroll when dragging near viewport boundaries
-    if (settings.autoScrollOnDrag) {
-      if (e.clientY < 60) {
-        window.scrollBy({ top: -14, behavior: "auto" })
-      } else if (e.clientY > window.innerHeight - 60) {
-        window.scrollBy({ top: 14, behavior: "auto" })
-      }
-    }
 
     const rect = e.currentTarget.getBoundingClientRect()
     const midY = rect.top + rect.height / 2
@@ -310,6 +379,7 @@ function SidePanel() {
   const handleDrop = async (e: React.DragEvent, targetTab: Tab) => {
     e.preventDefault()
     setDragOverTabId(null)
+    autoScrollSpeedRef.current = 0
 
     if (!draggedTab || draggedTab.id === targetTab.id) return
 
@@ -398,9 +468,7 @@ function SidePanel() {
               dragPosition={dragPosition}
               isCollapsed={isCollapsed}
               stickyHeaders={settings.stickyQueueHeaders}
-              useQueueColorForIndicator={settings.useQueueColorForIndicator}
               showAudioIndicator={settings.showAudioIndicator}
-              queueOutlineStyle={settings.queueOutlineStyle}
               tabMemoryMap={tabMemoryMap}
               fetchTabMemory={fetchTabMemory}
               closeButtonBehavior={settings.closeButtonBehavior}
@@ -413,6 +481,7 @@ function SidePanel() {
               handleDragStart={handleDragStart}
               handleDragOver={handleDragOver}
               handleDragLeave={() => setDragOverTabId(null)}
+              handleDragEnd={handleDragEnd}
               handleDrop={handleDrop}
               handleGoToTab={handleGoToTab}
               closeTab={closeTab}

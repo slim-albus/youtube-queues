@@ -94,7 +94,7 @@ export function Fab({
           {/* Unload All Tabs Quick Action */}
           <button
             onClick={onUnloadAllOtherTabs}
-            className="text-[#aaaaaa] hover:text-yellow-400 p-1.5 rounded-full hover:bg-[#333333] transition-colors"
+            className="text-[#aaaaaa] hover:text-white p-1.5 rounded-full hover:bg-[#333333] transition-colors"
             title="Unload all tabs"
           >
             <Moon size={15} />

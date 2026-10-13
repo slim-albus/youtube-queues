@@ -2,7 +2,6 @@ export type ClickBehavior = "background" | "new_active" | "same_tab"
 export type CloseButtonBehavior = "unload_then_close" | "close"
 export type StatsDisplayLocation = "fab" | "header" | "both"
 export type DuplicateCheckBehavior = "focus_existing" | "allow"
-export type QueueOutlineStyle = "glow" | "solid" | "off"
 
 export interface AppSettings {
   // Video Link Behavior
@@ -20,9 +19,7 @@ export interface AppSettings {
 
   // Interface & Appearance
   statsDisplayLocation: StatsDisplayLocation
-  useQueueColorForIndicator: boolean
   showAudioIndicator: boolean
-  queueOutlineStyle: QueueOutlineStyle
   stickyQueueHeaders: boolean
   showScrollHelperButtons: boolean
   autoScrollToActiveTab: boolean
@@ -43,9 +40,7 @@ export const defaultSettings: AppSettings = {
   closeButtonBehavior: "unload_then_close",
 
   statsDisplayLocation: "fab",
-  useQueueColorForIndicator: true,
   showAudioIndicator: true,
-  queueOutlineStyle: "glow",
   stickyQueueHeaders: true,
   showScrollHelperButtons: true,
   autoScrollToActiveTab: true,

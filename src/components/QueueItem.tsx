@@ -1,7 +1,7 @@
 import React from "react"
 import { ChevronDown, ChevronRight, Edit2, Trash2 } from "lucide-react"
 import { TabItem } from "./TabItem"
-import { CloseButtonBehavior, QueueOutlineStyle } from "../lib/settings"
+import { CloseButtonBehavior } from "../lib/settings"
 
 type TabGroup = chrome.tabGroups.TabGroup
 type Tab = chrome.tabs.Tab
@@ -21,9 +21,7 @@ interface QueueItemProps {
   dragPosition: "before" | "after"
   isCollapsed: boolean
   stickyHeaders: boolean
-  useQueueColorForIndicator: boolean
   showAudioIndicator: boolean
-  queueOutlineStyle: QueueOutlineStyle
   closeButtonBehavior: CloseButtonBehavior
   tabMemoryMap: Record<number, number>
   fetchTabMemory: (tabId: number) => void
@@ -36,6 +34,7 @@ interface QueueItemProps {
   handleDragStart: (e: React.DragEvent, tab: Tab) => void
   handleDragOver: (e: React.DragEvent, tab: Tab) => void
   handleDragLeave: () => void
+  handleDragEnd?: () => void
   handleDrop: (e: React.DragEvent, tab: Tab) => void
   handleGoToTab: (tab: Tab) => void
   closeTab: (tabId: number, e: React.MouseEvent) => void
@@ -54,9 +53,7 @@ export function QueueItem({
   dragPosition,
   isCollapsed,
   stickyHeaders,
-  useQueueColorForIndicator,
   showAudioIndicator,
-  queueOutlineStyle,
   closeButtonBehavior,
   tabMemoryMap,
   fetchTabMemory,
@@ -69,6 +66,7 @@ export function QueueItem({
   handleDragStart,
   handleDragOver,
   handleDragLeave,
+  handleDragEnd,
   handleDrop,
   handleGoToTab,
   closeTab,
@@ -78,34 +76,8 @@ export function QueueItem({
 }: QueueItemProps) {
   const groupColor = colorMap[queue.group.color] || colorMap.grey
 
-  // Compute outline styling (glow shade gradient vs solid line vs off)
-  const getContainerStyle = () => {
-    if (queueOutlineStyle === "glow") {
-      return {
-        borderColor: `${groupColor}55`,
-        boxShadow: `0 0 14px ${groupColor}25, 0 0 2px ${groupColor}50`,
-        background: `linear-gradient(180deg, ${groupColor}18 0%, #0f0f0f 34px)`
-      }
-    }
-    if (queueOutlineStyle === "solid") {
-      return {
-        borderColor: `${groupColor}40`,
-        boxShadow: "none",
-        background: "#0f0f0f"
-      }
-    }
-    return {
-      borderColor: "#272727",
-      boxShadow: "none",
-      background: "#0f0f0f"
-    }
-  }
-
   return (
-    <div
-      className="border rounded-lg shadow-sm transition-all mb-1.5"
-      style={getContainerStyle()}
-    >
+    <div className="bg-[#0f0f0f] border border-[#272727] rounded-lg shadow-sm transition-colors mb-1.5">
       {/* Queue Header */}
       <div
         className={`bg-[#272727] px-2 py-1 flex items-center justify-between cursor-pointer hover:bg-[#3f3f3f] transition-colors group/header rounded-t-lg ${
@@ -113,12 +85,12 @@ export function QueueItem({
         } ${stickyHeaders ? "sticky top-9 z-10" : ""}`}
         style={{
           borderBottomWidth: isCollapsed ? "0px" : "1px",
-          borderBottomColor: `${groupColor}40`
+          borderBottomColor: "#333333"
         }}
         onClick={() => toggleCollapse(queue)}
       >
         <div className="flex items-center gap-1.5 flex-1 overflow-hidden">
-          {/* Color Tab Indicator on the left */}
+          {/* Vertical Color Tab Indicator on the left */}
           <div
             className="w-1.5 h-4 rounded-full flex-shrink-0"
             style={{
@@ -184,8 +156,6 @@ export function QueueItem({
             <TabItem
               key={tab.id}
               tab={tab}
-              groupColor={groupColor}
-              useQueueColorForIndicator={useQueueColorForIndicator}
               showAudioIndicator={showAudioIndicator}
               closeButtonBehavior={closeButtonBehavior}
               realMemoryMb={tabMemoryMap[tab.id!]}
@@ -196,6 +166,7 @@ export function QueueItem({
               handleDragStart={handleDragStart}
               handleDragOver={handleDragOver}
               handleDragLeave={handleDragLeave}
+              handleDragEnd={handleDragEnd}
               handleDrop={handleDrop}
               handleGoToTab={handleGoToTab}
               closeTab={closeTab}

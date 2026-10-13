@@ -133,9 +133,9 @@ export function ContextMenu({
               onUnloadTab(tab.id!)
               onClose()
             }}
-            className="w-full text-left px-2 py-1.5 hover:bg-[#383838] rounded flex items-center gap-2 text-yellow-400 transition-colors"
+            className="w-full text-left px-2 py-1.5 hover:bg-[#383838] rounded flex items-center gap-2 text-white transition-colors"
           >
-            <Moon size={14} />
+            <Moon size={14} className="text-white" />
             <span>Unload Tab</span>
           </button>
         )}

@@ -1,3 +1,4 @@
+import React from "react"
 import { X, Moon, Volume2, VolumeX } from "lucide-react"
 import { CloseButtonBehavior } from "../lib/settings"
 
@@ -5,8 +6,6 @@ type Tab = chrome.tabs.Tab
 
 interface TabItemProps {
   tab: Tab
-  groupColor: string
-  useQueueColorForIndicator: boolean
   showAudioIndicator: boolean
   closeButtonBehavior: CloseButtonBehavior
   activeTabId: number | null
@@ -17,6 +16,7 @@ interface TabItemProps {
   handleDragStart: (e: React.DragEvent, tab: Tab) => void
   handleDragOver: (e: React.DragEvent, tab: Tab) => void
   handleDragLeave: () => void
+  handleDragEnd?: () => void
   handleDrop: (e: React.DragEvent, tab: Tab) => void
   handleGoToTab: (tab: Tab) => void
   closeTab: (tabId: number, e: React.MouseEvent) => void
@@ -27,8 +27,6 @@ interface TabItemProps {
 
 export function TabItem({
   tab,
-  groupColor,
-  useQueueColorForIndicator,
   showAudioIndicator,
   closeButtonBehavior,
   activeTabId,
@@ -39,6 +37,7 @@ export function TabItem({
   handleDragStart,
   handleDragOver,
   handleDragLeave,
+  handleDragEnd,
   handleDrop,
   handleGoToTab,
   closeTab,
@@ -66,8 +65,6 @@ export function TabItem({
     }
   }
 
-  const indicatorColor = useQueueColorForIndicator ? groupColor : "#22c55e"
-
   return (
     <div className="relative">
       {isDragTarget && dragPosition === "before" && (
@@ -79,6 +76,7 @@ export function TabItem({
         onDragStart={(e) => handleDragStart(e, tab)}
         onDragOver={(e) => handleDragOver(e, tab)}
         onDragLeave={handleDragLeave}
+        onDragEnd={handleDragEnd}
         onDrop={(e) => handleDrop(e, tab)}
         onClick={() => handleGoToTab(tab)}
         onMouseEnter={onHoverTab}
@@ -88,23 +86,28 @@ export function TabItem({
         }}
         className={`group flex items-center justify-between px-2 py-1 rounded-md transition-all cursor-pointer select-none ${
           isActive
-            ? "bg-[#272727] border border-[#3f3f3f]"
-            : "hover:bg-[#272727] border border-transparent"
+            ? "bg-[#272727] border border-[#3f3f3f] opacity-100 shadow-sm"
+            : tab.discarded
+            ? "opacity-55 hover:opacity-95 hover:bg-[#1f1f1f] border border-transparent"
+            : "opacity-100 hover:bg-[#272727] border border-transparent"
         }`}
       >
         <div className="flex items-center gap-2 overflow-hidden w-full">
+          {/* YouTube / Site Favicon: B&W grayscale with high contrast when sleeping, vibrant full color when loaded */}
           <img
             src={tab.favIconUrl || "https://www.youtube.com/favicon.ico"}
-            className={`w-3.5 h-3.5 flex-shrink-0 ${
-              tab.discarded ? "opacity-40" : "opacity-100"
+            className={`w-3.5 h-3.5 flex-shrink-0 transition-all ${
+              tab.discarded
+                ? "grayscale contrast-125 opacity-60 group-hover:opacity-85"
+                : "grayscale-0 opacity-100"
             }`}
             alt=""
           />
 
           <span
-            className={`truncate text-sm ${
+            className={`truncate text-sm transition-colors ${
               tab.discarded
-                ? "text-[#aaaaaa] group-hover:text-[#f1f1f1]"
+                ? "text-[#888888] group-hover:text-[#e0e0e0]"
                 : isActive
                 ? "text-white font-medium"
                 : "text-[#f1f1f1]"
@@ -135,26 +138,12 @@ export function TabItem({
             </button>
           )}
 
-          {/* Status & Memory Dot */}
-          <div
-            title={`${tab.discarded ? "Sleeping" : "Loaded (Active)"} • ${memoryText}`}
-            className="w-2 h-2 rounded-full flex-shrink-0 transition-colors"
-            style={
-              tab.discarded
-                ? { backgroundColor: "#3f3f3f" }
-                : {
-                    backgroundColor: indicatorColor,
-                    boxShadow: `0 0 6px ${indicatorColor}`
-                  }
-            }
-          />
-
           {/* Unified Single Action Button: Unloads first if loaded, closes if sleeping */}
           <button
             onClick={handleSingleButtonClick}
             className={`p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity bg-[#0f0f0f] hover:bg-[#3f3f3f] ${
               !tab.discarded && closeButtonBehavior === "unload_then_close"
-                ? "text-yellow-400 hover:text-yellow-300"
+                ? "text-white hover:text-[#f1f1f1]"
                 : "text-[#aaaaaa] hover:text-[#f1f1f1]"
             }`}
             title={
@@ -164,7 +153,7 @@ export function TabItem({
             }
           >
             {!tab.discarded && closeButtonBehavior === "unload_then_close" ? (
-              <Moon size={13} />
+              <Moon size={13} className="text-white" />
             ) : (
               <X size={14} />
             )}

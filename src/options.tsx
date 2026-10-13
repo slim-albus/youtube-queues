@@ -8,7 +8,6 @@ import {
   CloseButtonBehavior,
   StatsDisplayLocation,
   DuplicateCheckBehavior,
-  QueueOutlineStyle,
   defaultSettings
 } from "./lib/settings"
 import { Settings, Save, Check, RotateCcw, AlertCircle } from "lucide-react"
@@ -73,12 +72,6 @@ function Options() {
     { value: "fab", label: "In Bottom HUD Pill (Clean Header)" },
     { value: "header", label: "In Top Header" },
     { value: "both", label: "In Both HUD & Header" }
-  ]
-
-  const OutlineOptions = [
-    { value: "glow", label: "Glowing Shade Gradient (Recommended)" },
-    { value: "solid", label: "Simple Solid Line" },
-    { value: "off", label: "Off (No Colored Outline)" }
   ]
 
   const DuplicateOptions = [
@@ -343,49 +336,6 @@ function Options() {
                     </option>
                   ))}
                 </select>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="font-medium text-sm">Queue Outline Style</label>
-                <select
-                  className="bg-[#0f0f0f] border border-[#3f3f3f] rounded-lg p-2.5 text-[#f1f1f1] outline-none focus:border-red-500 text-sm"
-                  value={settings.queueOutlineStyle}
-                  onChange={(e) =>
-                    setSettings({
-                      ...settings,
-                      queueOutlineStyle: e.target.value as QueueOutlineStyle
-                    })
-                  }
-                >
-                  {OutlineOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex flex-col">
-                  <label className="font-medium text-sm">Queue-Colored Active Dot</label>
-                  <span className="text-xs text-[#aaaaaa]">
-                    Show queue's specific color for loaded tabs instead of standard green.
-                  </span>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={settings.useQueueColorForIndicator}
-                    onChange={(e) =>
-                      setSettings({
-                        ...settings,
-                        useQueueColorForIndicator: e.target.checked
-                      })
-                    }
-                  />
-                  <div className="w-11 h-6 bg-[#0f0f0f] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-zinc-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
-                </label>
               </div>
 
               <div className="flex items-center justify-between">
