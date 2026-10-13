@@ -30,12 +30,14 @@ export function extractVideoId(url?: string): string | null {
   return null
 }
 
-// Find if a tab already has this video ID open
+// Find if any open tab already has this video ID open
 async function findDuplicateTab(videoId: string, excludeTabId?: number): Promise<chrome.tabs.Tab | null> {
-  const tabs = await chrome.tabs.query({ url: "*://*.youtube.com/*" })
+  const tabs = await chrome.tabs.query({})
   for (const tab of tabs) {
     if (tab.id === excludeTabId) continue
-    const vId = extractVideoId(tab.url || tab.pendingUrl)
+    const targetUrl = tab.url || tab.pendingUrl
+    if (!targetUrl) continue
+    const vId = extractVideoId(targetUrl)
     if (vId && vId === videoId) {
       return tab
     }
@@ -97,6 +99,24 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
 })
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  // Check duplicate URL on navigation
+  if (changeInfo.url) {
+    const vId = extractVideoId(changeInfo.url)
+    if (vId) {
+      const rawSettings = await chrome.storage.sync.get(defaultSettings)
+      const settings = rawSettings as AppSettings
+      if (settings.duplicateCheckBehavior === "focus_existing") {
+        const dup = await findDuplicateTab(vId, tabId)
+        if (dup && dup.id) {
+          chrome.tabs.remove(tabId).catch(() => {})
+          if (dup.windowId) chrome.windows.update(dup.windowId, { focused: true })
+          chrome.tabs.update(dup.id, { active: true })
+          return
+        }
+      }
+    }
+  }
+
   if (tab.url?.includes("youtube.com")) {
     const rawSettings = await chrome.storage.sync.get(defaultSettings)
     const settings = rawSettings as AppSettings
@@ -125,7 +145,7 @@ chrome.tabs.onCreated.addListener(async (tab) => {
   if (!tab.id) return
   let url = tab.url || tab.pendingUrl
   
-  if (url && url.includes("youtube.com")) {
+  if (url && (url.includes("youtube.com") || url.includes("youtu.be"))) {
     const rawSettings = await chrome.storage.sync.get(defaultSettings)
     const settings = rawSettings as AppSettings
 
@@ -135,7 +155,7 @@ chrome.tabs.onCreated.addListener(async (tab) => {
       const dup = await findDuplicateTab(videoId, tab.id)
       if (dup && dup.id) {
         // Switch to duplicate tab instead of creating a new one
-        chrome.tabs.remove(tab.id)
+        chrome.tabs.remove(tab.id).catch(() => {})
         if (dup.windowId) chrome.windows.update(dup.windowId, { focused: true })
         chrome.tabs.update(dup.id, { active: true })
         return
@@ -227,7 +247,7 @@ chrome.tabGroups.onCreated.addListener(() => refreshContextMenus())
 chrome.tabGroups.onRemoved.addListener(() => refreshContextMenus())
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-  if (info.linkUrl && info.linkUrl.includes("youtube.com")) {
+  if (info.linkUrl && (info.linkUrl.includes("youtube.com") || info.linkUrl.includes("youtu.be"))) {
     const rawSettings = await chrome.storage.sync.get(defaultSettings)
     const settings = rawSettings as AppSettings
 
@@ -263,8 +283,9 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   }
 })
 
-// Handle manual background opening and control messages
+// Handle manual tab opening and control messages
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  // Open in background (Queue)
   if (request.action === "openBackground" && request.url && sender.tab) {
     (async () => {
       const rawSettings = await chrome.storage.sync.get(defaultSettings)
@@ -301,6 +322,39 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       // 3. Queue it for instant discard once title loads
       if (newTab.id) {
         pendingDiscard.add(newTab.id)
+      }
+      sendResponse({ success: true, tabId: newTab.id })
+    })()
+    return true
+  }
+
+  // Open in new active tab
+  if (request.action === "openTab" && request.url && sender.tab) {
+    (async () => {
+      const rawSettings = await chrome.storage.sync.get(defaultSettings)
+      const settings = rawSettings as AppSettings
+
+      // Check for duplicate video
+      const videoId = extractVideoId(request.url)
+      if (videoId && settings.duplicateCheckBehavior === "focus_existing") {
+        const dup = await findDuplicateTab(videoId)
+        if (dup && dup.id) {
+          if (dup.windowId) await chrome.windows.update(dup.windowId, { focused: true })
+          await chrome.tabs.update(dup.id, { active: true })
+          sendResponse({ duplicate: true, tabId: dup.id })
+          return
+        }
+      }
+
+      const newTab = await chrome.tabs.create({
+        url: request.url,
+        active: true,
+        index: sender.tab.index + 1,
+        openerTabId: sender.tab.id
+      })
+
+      if (sender.tab.groupId && sender.tab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE && newTab.id) {
+        await chrome.tabs.group({ tabIds: newTab.id, groupId: sender.tab.groupId })
       }
       sendResponse({ success: true, tabId: newTab.id })
     })()

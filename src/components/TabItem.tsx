@@ -1,4 +1,4 @@
-import { X, Moon } from "lucide-react"
+import { X, Moon, Volume2, VolumeX } from "lucide-react"
 import { CloseButtonBehavior } from "../lib/settings"
 
 type Tab = chrome.tabs.Tab
@@ -7,6 +7,7 @@ interface TabItemProps {
   tab: Tab
   groupColor: string
   useQueueColorForIndicator: boolean
+  showAudioIndicator: boolean
   closeButtonBehavior: CloseButtonBehavior
   activeTabId: number | null
   dragOverTabId: number | null
@@ -18,6 +19,7 @@ interface TabItemProps {
   handleGoToTab: (tab: Tab) => void
   closeTab: (tabId: number, e: React.MouseEvent) => void
   unloadTab: (tabId: number, e: React.MouseEvent) => void
+  toggleMuteTab: (tabId: number, e: React.MouseEvent) => void
   onContextMenu: (e: React.MouseEvent, tab: Tab) => void
 }
 
@@ -25,6 +27,7 @@ export function TabItem({
   tab,
   groupColor,
   useQueueColorForIndicator,
+  showAudioIndicator,
   closeButtonBehavior,
   activeTabId,
   dragOverTabId,
@@ -36,6 +39,7 @@ export function TabItem({
   handleGoToTab,
   closeTab,
   unloadTab,
+  toggleMuteTab,
   onContextMenu
 }: TabItemProps) {
   const isDragTarget = dragOverTabId === tab.id
@@ -102,7 +106,26 @@ export function TabItem({
           </span>
         </div>
 
-        <div className="flex items-center gap-2 ml-1 shrink-0">
+        <div className="flex items-center gap-1.5 ml-1 shrink-0">
+          {/* Audio Playing / Muted Indicator & 1-click Mute Button */}
+          {showAudioIndicator && (tab.audible || tab.mutedInfo?.muted) && (
+            <button
+              onClick={(e) => toggleMuteTab(tab.id!, e)}
+              className="p-1 rounded hover:bg-[#3f3f3f] transition-colors"
+              title={
+                tab.mutedInfo?.muted
+                  ? "Tab is muted - Click to unmute"
+                  : "Playing audio - Click to mute"
+              }
+            >
+              {tab.mutedInfo?.muted ? (
+                <VolumeX size={13} className="text-red-400" />
+              ) : (
+                <Volume2 size={13} className="text-green-400 animate-pulse" />
+              )}
+            </button>
+          )}
+
           {/* Status & Memory Dot */}
           <div
             title={`${tab.discarded ? "Sleeping" : "Loaded (Active)"} • ${memoryText}`}

@@ -8,6 +8,9 @@ export interface AppSettings {
   leftClickBehavior: ClickBehavior
   ctrlClickBehavior: ClickBehavior
   duplicateCheckBehavior: DuplicateCheckBehavior
+  queueMixVideos: boolean
+  queueChannelUploadVideos: boolean
+  queuePlaylistSidebarVideos: boolean
 
   // Memory Management
   maxActiveTabs: number
@@ -17,6 +20,7 @@ export interface AppSettings {
   // Interface & Appearance
   statsDisplayLocation: StatsDisplayLocation
   useQueueColorForIndicator: boolean
+  showAudioIndicator: boolean
   stickyQueueHeaders: boolean
   showScrollHelperButtons: boolean
   autoScrollToActiveTab: boolean
@@ -28,6 +32,9 @@ export const defaultSettings: AppSettings = {
   leftClickBehavior: "background",
   ctrlClickBehavior: "same_tab",
   duplicateCheckBehavior: "focus_existing",
+  queueMixVideos: true,
+  queueChannelUploadVideos: true,
+  queuePlaylistSidebarVideos: true,
 
   maxActiveTabs: 5,
   autoUnload: true,
@@ -35,6 +42,7 @@ export const defaultSettings: AppSettings = {
 
   statsDisplayLocation: "fab",
   useQueueColorForIndicator: true,
+  showAudioIndicator: true,
   stickyQueueHeaders: true,
   showScrollHelperButtons: true,
   autoScrollToActiveTab: true,

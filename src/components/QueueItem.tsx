@@ -22,6 +22,7 @@ interface QueueItemProps {
   isCollapsed: boolean
   stickyHeaders: boolean
   useQueueColorForIndicator: boolean
+  showAudioIndicator: boolean
   closeButtonBehavior: CloseButtonBehavior
   setEditTitle: (val: string) => void
   startRename: (group: TabGroup, e: React.MouseEvent) => void
@@ -36,6 +37,7 @@ interface QueueItemProps {
   handleGoToTab: (tab: Tab) => void
   closeTab: (tabId: number, e: React.MouseEvent) => void
   unloadTab: (tabId: number, e: React.MouseEvent) => void
+  toggleMuteTab: (tabId: number, e: React.MouseEvent) => void
   onContextMenu: (e: React.MouseEvent, tab: Tab) => void
 }
 
@@ -50,6 +52,7 @@ export function QueueItem({
   isCollapsed,
   stickyHeaders,
   useQueueColorForIndicator,
+  showAudioIndicator,
   closeButtonBehavior,
   setEditTitle,
   startRename,
@@ -64,6 +67,7 @@ export function QueueItem({
   handleGoToTab,
   closeTab,
   unloadTab,
+  toggleMuteTab,
   onContextMenu
 }: QueueItemProps) {
   const groupColor = colorMap[queue.group.color] || colorMap.grey
@@ -151,6 +155,7 @@ export function QueueItem({
               tab={tab}
               groupColor={groupColor}
               useQueueColorForIndicator={useQueueColorForIndicator}
+              showAudioIndicator={showAudioIndicator}
               closeButtonBehavior={closeButtonBehavior}
               activeTabId={activeTabId}
               dragOverTabId={dragOverTabId}
@@ -162,6 +167,7 @@ export function QueueItem({
               handleGoToTab={handleGoToTab}
               closeTab={closeTab}
               unloadTab={unloadTab}
+              toggleMuteTab={toggleMuteTab}
               onContextMenu={onContextMenu}
             />
           ))}

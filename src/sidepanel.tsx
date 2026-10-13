@@ -201,6 +201,18 @@ function SidePanel() {
     loadData()
   }
 
+  const toggleMuteTab = async (tabId: number, e: React.MouseEvent) => {
+    e.stopPropagation()
+    try {
+      const tab = await chrome.tabs.get(tabId)
+      const isMuted = !!tab.mutedInfo?.muted
+      await chrome.tabs.update(tabId, { muted: !isMuted })
+      loadData()
+    } catch {
+      // Tab might be closed
+    }
+  }
+
   const handleUnloadAllOtherTabs = async () => {
     const allYoutubeTabs = await chrome.tabs.query({ url: "*://*.youtube.com/*" })
     for (const tab of allYoutubeTabs) {
@@ -372,6 +384,7 @@ function SidePanel() {
               isCollapsed={isCollapsed}
               stickyHeaders={settings.stickyQueueHeaders}
               useQueueColorForIndicator={settings.useQueueColorForIndicator}
+              showAudioIndicator={settings.showAudioIndicator}
               closeButtonBehavior={settings.closeButtonBehavior}
               setEditTitle={setEditTitle}
               startRename={startRename}
@@ -386,6 +399,7 @@ function SidePanel() {
               handleGoToTab={handleGoToTab}
               closeTab={closeTab}
               unloadTab={unloadTab}
+              toggleMuteTab={toggleMuteTab}
               onContextMenu={handleContextMenu}
             />
           )
