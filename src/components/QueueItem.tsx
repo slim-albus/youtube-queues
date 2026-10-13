@@ -123,9 +123,6 @@ export function QueueItem({
                 }}
               >
                 {queue.group.title || "Unnamed"}
-                <span className="text-sm text-[#aaaaaa] font-normal shrink-0">
-                  ({queue.tabs.length})
-                </span>
               </h2>
               <button
                 onClick={(e) => startRename(queue.group, e)}
@@ -138,16 +135,25 @@ export function QueueItem({
           )}
         </div>
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            deleteQueue(queue)
-          }}
-          className="text-[#aaaaaa] hover:text-[#ff0000] p-1.5 transition-all ml-1 opacity-0 group-hover/header:opacity-100"
-          title="Delete Queue"
-        >
-          <Trash2 size={16} />
-        </button>
+        {/* Right Section: Item Count (shifts to side on hover) & Delete Button (slides in on hover) */}
+        <div className="flex items-center shrink-0 ml-1.5">
+          <span className="text-xs text-[#888888] font-mono select-none transition-colors group-hover/header:text-[#cccccc]">
+            {queue.tabs.length}
+          </span>
+
+          <div className="max-w-0 opacity-0 pointer-events-none group-hover/header:max-w-8 group-hover/header:opacity-100 group-hover/header:pointer-events-auto transition-all duration-200 ease-out overflow-hidden flex items-center">
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                deleteQueue(queue)
+              }}
+              className="text-[#aaaaaa] hover:text-[#ff0000] p-1 rounded hover:bg-[#383838] transition-colors ml-1.5"
+              title="Delete Queue"
+            >
+              <Trash2 size={15} />
+            </button>
+          </div>
+        </div>
       </div>
 
       {!isCollapsed && (
