@@ -148,7 +148,7 @@ export function ContextMenu({
           className="w-full text-left px-2 py-1.5 hover:bg-[#383838] rounded flex items-center gap-2 text-[#cccccc] transition-colors"
         >
           <Moon size={14} />
-          <span>Unload Other Tabs</span>
+          <span>Unload all other tabs</span>
         </button>
       </div>
 

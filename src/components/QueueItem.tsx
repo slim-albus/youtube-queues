@@ -1,7 +1,7 @@
 import React from "react"
 import { ChevronDown, ChevronRight, Edit2, Trash2 } from "lucide-react"
 import { TabItem } from "./TabItem"
-import { CloseButtonBehavior } from "../lib/settings"
+import { CloseButtonBehavior, QueueOutlineStyle } from "../lib/settings"
 
 type TabGroup = chrome.tabGroups.TabGroup
 type Tab = chrome.tabs.Tab
@@ -23,7 +23,10 @@ interface QueueItemProps {
   stickyHeaders: boolean
   useQueueColorForIndicator: boolean
   showAudioIndicator: boolean
+  queueOutlineStyle: QueueOutlineStyle
   closeButtonBehavior: CloseButtonBehavior
+  tabMemoryMap: Record<number, number>
+  fetchTabMemory: (tabId: number) => void
   setEditTitle: (val: string) => void
   startRename: (group: TabGroup, e: React.MouseEvent) => void
   saveRename: (groupId: number) => void
@@ -53,7 +56,10 @@ export function QueueItem({
   stickyHeaders,
   useQueueColorForIndicator,
   showAudioIndicator,
+  queueOutlineStyle,
   closeButtonBehavior,
+  tabMemoryMap,
+  fetchTabMemory,
   setEditTitle,
   startRename,
   saveRename,
@@ -72,10 +78,33 @@ export function QueueItem({
 }: QueueItemProps) {
   const groupColor = colorMap[queue.group.color] || colorMap.grey
 
+  // Compute outline styling (glow shade gradient vs solid line vs off)
+  const getContainerStyle = () => {
+    if (queueOutlineStyle === "glow") {
+      return {
+        borderColor: `${groupColor}55`,
+        boxShadow: `0 0 14px ${groupColor}25, 0 0 2px ${groupColor}50`,
+        background: `linear-gradient(180deg, ${groupColor}18 0%, #0f0f0f 34px)`
+      }
+    }
+    if (queueOutlineStyle === "solid") {
+      return {
+        borderColor: `${groupColor}40`,
+        boxShadow: "none",
+        background: "#0f0f0f"
+      }
+    }
+    return {
+      borderColor: "#272727",
+      boxShadow: "none",
+      background: "#0f0f0f"
+    }
+  }
+
   return (
     <div
-      className="bg-[#0f0f0f] border rounded-lg shadow-sm transition-colors mb-1.5"
-      style={{ borderColor: `${groupColor}40` }}
+      className="border rounded-lg shadow-sm transition-all mb-1.5"
+      style={getContainerStyle()}
     >
       {/* Queue Header */}
       <div
@@ -89,16 +118,18 @@ export function QueueItem({
         onClick={() => toggleCollapse(queue)}
       >
         <div className="flex items-center gap-1.5 flex-1 overflow-hidden">
+          {/* Color Tab Indicator on the left */}
+          <div
+            className="w-1.5 h-4 rounded-full flex-shrink-0"
+            style={{
+              backgroundColor: groupColor,
+              boxShadow: `0 0 8px ${groupColor}90`
+            }}
+          />
+
           <div className="text-[#aaaaaa]">
             {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
           </div>
-          <div
-            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-            style={{
-              backgroundColor: groupColor,
-              boxShadow: `0 0 6px ${groupColor}`
-            }}
-          />
 
           {editingGroupId === queue.group.id ? (
             <input
@@ -157,6 +188,8 @@ export function QueueItem({
               useQueueColorForIndicator={useQueueColorForIndicator}
               showAudioIndicator={showAudioIndicator}
               closeButtonBehavior={closeButtonBehavior}
+              realMemoryMb={tabMemoryMap[tab.id!]}
+              onHoverTab={() => fetchTabMemory(tab.id!)}
               activeTabId={activeTabId}
               dragOverTabId={dragOverTabId}
               dragPosition={dragPosition}

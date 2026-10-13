@@ -12,6 +12,8 @@ interface TabItemProps {
   activeTabId: number | null
   dragOverTabId: number | null
   dragPosition: "before" | "after"
+  realMemoryMb?: number
+  onHoverTab?: () => void
   handleDragStart: (e: React.DragEvent, tab: Tab) => void
   handleDragOver: (e: React.DragEvent, tab: Tab) => void
   handleDragLeave: () => void
@@ -32,6 +34,8 @@ export function TabItem({
   activeTabId,
   dragOverTabId,
   dragPosition,
+  realMemoryMb,
+  onHoverTab,
   handleDragStart,
   handleDragOver,
   handleDragLeave,
@@ -45,8 +49,12 @@ export function TabItem({
   const isDragTarget = dragOverTabId === tab.id
   const isActive = activeTabId === tab.id
 
-  // Memory estimate / state
-  const memoryText = tab.discarded ? "Asleep (0 MB RAM)" : "~240 MB RAM"
+  // Memory display text
+  const memoryText = tab.discarded
+    ? "Asleep (0 MB RAM)"
+    : realMemoryMb
+    ? `${realMemoryMb} MB RAM (Active)`
+    : "~240 MB RAM (Active)"
 
   // Unified single button action
   const handleSingleButtonClick = (e: React.MouseEvent) => {
@@ -73,6 +81,7 @@ export function TabItem({
         onDragLeave={handleDragLeave}
         onDrop={(e) => handleDrop(e, tab)}
         onClick={() => handleGoToTab(tab)}
+        onMouseEnter={onHoverTab}
         onContextMenu={(e) => {
           e.preventDefault()
           onContextMenu(e, tab)

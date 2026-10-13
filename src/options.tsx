@@ -8,6 +8,7 @@ import {
   CloseButtonBehavior,
   StatsDisplayLocation,
   DuplicateCheckBehavior,
+  QueueOutlineStyle,
   defaultSettings
 } from "./lib/settings"
 import { Settings, Save, Check, RotateCcw, AlertCircle } from "lucide-react"
@@ -72,6 +73,12 @@ function Options() {
     { value: "fab", label: "In Bottom HUD Pill (Clean Header)" },
     { value: "header", label: "In Top Header" },
     { value: "both", label: "In Both HUD & Header" }
+  ]
+
+  const OutlineOptions = [
+    { value: "glow", label: "Glowing Shade Gradient (Recommended)" },
+    { value: "solid", label: "Simple Solid Line" },
+    { value: "off", label: "Off (No Colored Outline)" }
   ]
 
   const DuplicateOptions = [
@@ -331,6 +338,26 @@ function Options() {
                   }
                 >
                   {StatsOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="font-medium text-sm">Queue Outline Style</label>
+                <select
+                  className="bg-[#0f0f0f] border border-[#3f3f3f] rounded-lg p-2.5 text-[#f1f1f1] outline-none focus:border-red-500 text-sm"
+                  value={settings.queueOutlineStyle}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      queueOutlineStyle: e.target.value as QueueOutlineStyle
+                    })
+                  }
+                >
+                  {OutlineOptions.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
                     </option>

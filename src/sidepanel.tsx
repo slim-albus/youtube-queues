@@ -62,6 +62,21 @@ function SidePanel() {
   // Contextual scroll helper state
   const [scrollDirection, setScrollDirection] = useState<"up" | "down" | null>(null)
 
+  // Tab live memory cache
+  const [tabMemoryMap, setTabMemoryMap] = useState<Record<number, number>>({})
+
+  const fetchTabMemory = useCallback(async (tabId: number) => {
+    try {
+      const res = await chrome.tabs.sendMessage(tabId, { action: "getMemory" })
+      if (res && res.usedJSHeapSize) {
+        const mb = Math.round(res.usedJSHeapSize / (1024 * 1024))
+        setTabMemoryMap((prev) => ({ ...prev, [tabId]: mb }))
+      }
+    } catch {
+      // Tab might be in background or not loaded yet
+    }
+  }, [])
+
   // Load Settings
   useEffect(() => {
     getSettings().then(setSettings)
@@ -385,6 +400,9 @@ function SidePanel() {
               stickyHeaders={settings.stickyQueueHeaders}
               useQueueColorForIndicator={settings.useQueueColorForIndicator}
               showAudioIndicator={settings.showAudioIndicator}
+              queueOutlineStyle={settings.queueOutlineStyle}
+              tabMemoryMap={tabMemoryMap}
+              fetchTabMemory={fetchTabMemory}
               closeButtonBehavior={settings.closeButtonBehavior}
               setEditTitle={setEditTitle}
               startRename={startRename}
