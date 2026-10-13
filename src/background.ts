@@ -209,7 +209,20 @@ chrome.runtime.onInstalled.addListener(() => {
   refreshContextMenus()
 })
 
+// Toggle sidebar in Firefox when toolbar action icon is clicked
+chrome.action?.onClicked?.addListener(async () => {
+  const browserGlobal = (globalThis as any).browser
+  if (browserGlobal?.sidebarAction?.toggle) {
+    try {
+      await browserGlobal.sidebarAction.toggle()
+    } catch (e) {
+      console.warn("Could not toggle Firefox sidebarAction:", e)
+    }
+  }
+})
+
 async function refreshContextMenus() {
+  if (!chrome.tabGroups) return
   const groups = await chrome.tabGroups.query({})
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({
@@ -226,7 +239,8 @@ async function refreshContextMenus() {
     })
     
     chrome.tabs.query({ url: "*://*.youtube.com/*" }, (tabs) => {
-      const groupIds = new Set(tabs.filter(t => t.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE).map(t => t.groupId))
+      const noneGroupId = chrome.tabGroups?.TAB_GROUP_ID_NONE ?? -1
+      const groupIds = new Set(tabs.filter(t => t.groupId !== noneGroupId).map(t => t.groupId))
       for (const groupId of groupIds) {
         const group = groups.find(g => g.id === groupId)
         if (group) {
@@ -242,9 +256,11 @@ async function refreshContextMenus() {
   })
 }
 
-chrome.tabGroups.onUpdated.addListener(() => refreshContextMenus())
-chrome.tabGroups.onCreated.addListener(() => refreshContextMenus())
-chrome.tabGroups.onRemoved.addListener(() => refreshContextMenus())
+if (chrome.tabGroups) {
+  chrome.tabGroups.onUpdated?.addListener(() => refreshContextMenus())
+  chrome.tabGroups.onCreated?.addListener(() => refreshContextMenus())
+  chrome.tabGroups.onRemoved?.addListener(() => refreshContextMenus())
+}
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.linkUrl && (info.linkUrl.includes("youtube.com") || info.linkUrl.includes("youtu.be"))) {

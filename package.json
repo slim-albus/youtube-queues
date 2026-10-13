@@ -1,13 +1,20 @@
 {
   "name": "youtube-queues",
-  "displayName": "Youtube queues",
-  "version": "0.0.1",
-  "description": "Create multiple YouTube Watch queues with smart memory management.",
+  "displayName": "YouTube Queues - Smart Watch Queue & Tab Manager",
+  "version": "0.1.0",
+  "description": "Organize YouTube videos into categorized, color-coded watch queues with tab groups, auto-discarding memory savings, and 1-click controls.",
   "author": "Brooks <brookayneabeba@gmail.com>",
+  "license": "MIT",
   "scripts": {
     "dev": "plasmo dev",
+    "dev:firefox": "plasmo dev --target=firefox-mv3",
     "build": "plasmo build",
-    "package": "plasmo package"
+    "build:chrome": "plasmo build --target=chrome-mv3",
+    "build:firefox": "plasmo build --target=firefox-mv3",
+    "package": "plasmo package",
+    "package:chrome": "plasmo package --target=chrome-mv3",
+    "package:firefox": "plasmo package --target=firefox-mv3",
+    "package:all": "bun run package:chrome && bun run package:firefox"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -35,11 +42,17 @@
       "tabs",
       "tabGroups",
       "storage",
-      "contextMenus",
-      "background"
+      "contextMenus"
     ],
     "host_permissions": [
-      "https://*/*"
-    ]
+      "*://*.youtube.com/*",
+      "*://*.youtu.be/*"
+    ],
+    "browser_specific_settings": {
+      "gecko": {
+        "id": "youtube-queues@brooks.dev",
+        "strict_min_version": "138.0"
+      }
+    }
   }
 }
