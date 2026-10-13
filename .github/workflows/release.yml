@@ -34,7 +34,7 @@ jobs:
         id: prepare_assets
         run: |
           mkdir -p dist
-          TAG_NAME="${GITHUB_REF_NAME:-v0.1.0}"
+          TAG_NAME="${GITHUB_REF_NAME:-v1.0.0}"
           cp build/chrome-mv3-prod.zip "dist/youtube-queues-${TAG_NAME}-chrome.zip"
           cp build/firefox-mv3-prod.zip "dist/youtube-queues-${TAG_NAME}-firefox.zip"
           echo "tag_name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
