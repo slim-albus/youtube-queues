@@ -1,25 +1,14 @@
 # YouTube Queues
 
-A browser extension for users who open dozens of YouTube videos in new tabs but want to save RAM and keep their browser organized.
+A browser extension for people who open a ridiculous number of YouTube tabs, then wonder why their browser is using so much RAM.
 
-## The Problem
-
-When browsing YouTube, it is common to middle-click or right-click multiple videos to watch later. This causes several issues:
-1. Browser tabs pile up infinitely and clutter your workspace.
-2. Opening a new video tab often loads the page in the background, consuming hundreds of megabytes of RAM and CPU, which can lag the video you are currently watching.
-3. Managing which videos belong to which watch session becomes difficult.
-
-## The Solution
-
-YouTube Queues solves this by organizing links into categorized, color-coded queues using browser Tab Groups and providing an active Side Panel interface with smart memory hibernation.
+I made this because I had a weird habit of opening every video I wanted to watch in a new tab. It worked for a while, until my browser was full of half-watched videos and using far more memory than it needed to. YouTube Queues turns that habit into something a little more manageable: organized queues without keeping every video actively running.
 
 ### Key Features
-- **Smart RAM Hibernation:** Background video tabs fetch their title and are immediately put to sleep (0 MB active RAM). Videos do not autoplay or consume system memory until you switch to them.
-- **Configurable Click Queuing:** Left-clicking video cards, thumbnails, Mixes, or channel uploads can be configured to queue in the background without interrupting your current video.
-- **Native Tab Groups:** Integrates with native browser Tab Groups. You can create multiple queues (e.g. Music, Tutorials, Watch Later) with custom names and colors.
-- **Real RAM Inspection:** Hover over any tab in the Side Panel to see live JavaScript heap memory usage or sleeping status.
-- **Glowing Queue Headers:** Clean dark-mode queue cards with customizable outline styling (ambient glow gradient, solid border, or off).
-- **Side Panel Interface:** A dedicated Side Panel provides drag-and-drop queue management, quick unloading, audio mute toggling, and quick navigation.
+- **Low RAM usage:** Background YouTube tabs can be put to sleep until you need them.
+- **Organized queues:** Group videos into named, color-coded browser Tab Groups.
+- **Click-to-queue:** Send videos to a queue without interrupting what you are watching.
+- **Side Panel:** Manage queues, tabs, audio, and navigation in one place.
 
 ## Installation
 
